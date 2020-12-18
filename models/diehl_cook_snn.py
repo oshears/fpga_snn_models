@@ -26,7 +26,7 @@ class DiehlAndCookNetwork(Network):
         self,
         n_inpt: int,
         n_neurons: int = 100,
-        inh: float = 17.5,
+        inh: float = 120,
         dt: float = 1.0,
         nu: Optional[Union[float, Sequence[float]]] = (1e-4, 1e-2),
         reduction: Optional[callable] = None,
