@@ -1,1 +1,5 @@
 models/__pycache__/__init__.cpython-38.pyc
+data/
+models/__pycache__/__init__.cpython-36.pyc
+models/__pycache__/diehl_cook_snn.cpython-36.pyc
+*.pyc

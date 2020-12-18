@@ -37,7 +37,7 @@ args = parser.parse_args()
 n_neurons = 100
 
 # batch_size specifies the number of training samples to collect weight changes from before updating the weights
-batch_size = 128
+batch_size = 64
 
 # n_train specifies the number of training samples
 n_train = 60000
@@ -58,7 +58,7 @@ dt = 1
 intensity = 128
 
 # gpu setting
-gpu = False
+gpu = True
 
 # update_interavl specifies the number of samples processed before updating accuracy estimations
 update_interval = update_steps * batch_size
