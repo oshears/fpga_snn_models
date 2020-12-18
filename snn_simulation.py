@@ -16,7 +16,7 @@ import os
 import argparse
 
 # import local modules
-from models.diehl_cook_snn import DiehlAndCookNetwork,DiehlAndCookNetworkInt
+from models.diehl_cook_snn import DiehlAndCookNetwork16,DiehlAndCookNetwork32
 
 
 
@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser()
 
 # --encoding specifies the type of encoding (Poisson, Bernoulli or RankOrder)
 parser.add_argument("--encoding", type=str, default="Poisson")
+parser.add_argument("--weight_size", type=int, default=16)
 
 # parse the arguments
 args = parser.parse_args()
@@ -83,7 +84,10 @@ if args.encoding == "RankOrder":
 
 
 # build network based on the input argument
-network = DiehlAndCookNetworkInt(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+if args.weight_size == 16:
+    network = DiehlAndCookNetwork16(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+elif args.weight_size == 32:
+    network = DiehlAndCookNetwork32(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
 
 # run the network using the GPU/CUDA
 if gpu:
@@ -208,12 +212,12 @@ for step, batch in enumerate(train_dataloader):
 print("Training complete.\n")
 
 # save the network
-filename = f"./networks/diehlAndCook_{args.encoding}_{batch_size}_snn.pt"
+filename = f"./networks/diehlAndCook_{args.encoding}_{batch_size}_{args.weight_size}_snn.pt"
 network.save(filename)
 
 # write out network assignments and proportions
-torch.save(assignments,f'./networks/diehlAndCook_{args.encoding}_{batch_size}_snn_assignments.pt')
-torch.save(assignments,f'./networks/diehlAndCook_{args.encoding}_{batch_size}_snn_proportions.pt')
+torch.save(assignments,f'./networks/diehlAndCook_{args.encoding}_{batch_size}_{args.weight_size}_snn_assignments.pt')
+torch.save(assignments,f'./networks/diehlAndCook_{args.encoding}_{batch_size}_{args.weight_size}_snn_proportions.pt')
 
 # create a dictionary to store all assignment and proportional assignment accuracy values for the test data
 accuracy = {"all": 0, "proportion": 0}
