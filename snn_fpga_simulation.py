@@ -26,6 +26,7 @@ parser = argparse.ArgumentParser()
 
 # --encoding specifies the type of encoding (Poisson, Bernoulli or RankOrder)
 parser.add_argument("--encoding", type=str, default="Poisson")
+parser.add_argument("--bits", type=int, default=16)
 
 # parse the arguments
 args = parser.parse_args()
