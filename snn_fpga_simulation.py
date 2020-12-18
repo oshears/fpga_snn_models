@@ -84,9 +84,16 @@ if args.encoding == "RankOrder":
 
 
 # build network based on the input argument
-networkFile = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_snn.pt"
-weightFileDirectory = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_weights"
-network = load("./fpga_snn_models/networks/diehlAndCook_Poisson_64_snn.pt")
+networkFile = "./networks/diehlAndCook_Poisson_64_snn.pt"
+weightFileDirectory = "./networks/diehlAndCook_Poisson_64_weights"
+network = load("./networks/diehlAndCook_Poisson_64_snn.pt")
+assignments = torch.load('./networks/diehlAndCook_Poisson_64_snn_assignments.pt')
+proportions = torch.load('./networks/diehlAndCook_Poisson_64_snn_proportions.pt')
+proportions = proportions.view(1,n_neurons)
+
+if gpu:
+    assignments = assignments.cuda()
+    proportions = proportions.cuda()
 
 # update weights based on the FPGA values
 # extract connections
@@ -108,10 +115,10 @@ for neuronIdx in range(excitatoryConnectionWeights.shape[1]):
 
     neuronFile.close()
 
+
 # run the network using the GPU/CUDA
 if gpu:
     network.to("cuda")
-
 
 # load the MNIST test dataset
 # use the encoder to convert the input into spikes
@@ -133,16 +140,16 @@ test_dataloader = DataLoader( test_dataset, batch_size=256, shuffle=False, num_w
 n_classes = 10
 
 # assignments stores the label that each output neuron corresponds to
-assignments = -torch.ones(n_neurons, device=device)
+# assignments = -torch.ones(n_neurons, device=device)
 
 # proportions stores the ratio of the number of times each of the output neurons produced a spike for the corresponding class relative to other classes
-proportions = torch.zeros((n_neurons, n_classes), device=device)
+# proportions = torch.zeros((n_neurons, n_classes), device=device)
 
 # rates stores the number of times each of the output neurons produced a spike for the corresponding class
-rates = torch.zeros((n_neurons, n_classes), device=device)
+# rates = torch.zeros((n_neurons, n_classes), device=device)
 
 # create a dictionary to store all assignment and proportional assignment accuracy values
-accuracy = {"all": [], "proportion": []}
+# accuracy = {"all": [], "proportion": []}
 
 # create a monitor to record the spiking activity of the output layer (Y)
 output_spikes_monitor = Monitor(network.layers["Y"], state_vars=["s"], time=int(time / dt))
@@ -165,8 +172,10 @@ network.train(mode=False)
 # iterate over each batch
 for step, batch in enumerate(test_dataloader):
 
-    # get next input sample and send to the GPU
-    inputs = {"X": batch["encoded_image"].cuda()}
+    # get next input sample
+    inputs = {"X": batch["encoded_image"]}
+    if gpu:
+        inputs = {k: v.cuda() for k, v in inputs.items()}
 
     # run the network on the input
     network.run(inputs=inputs, time=time, input_time_dim=1)
