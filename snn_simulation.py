@@ -211,6 +211,12 @@ print("Training complete.\n")
 filename = f"./networks/diehlAndCook_{args.encoding}_{batch_size}_snn.pt"
 network.save(filename)
 
+# write out network assignments and proportions
+networkAssignmentFile = open(f"./networks/diehlAndCook_{args.encoding}_{batch_size}_snn_assignments.json","w")
+networkAssignmentFile.write(assignments)
+networkAssignmentFile.write(proportions)
+networkAssignmentFile.close()
+
 # create a dictionary to store all assignment and proportional assignment accuracy values for the test data
 accuracy = {"all": 0, "proportion": 0}
 
