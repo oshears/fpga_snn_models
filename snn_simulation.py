@@ -9,7 +9,6 @@ from torchvision import transforms
 # import modules from bindsnet
 from bindsnet.datasets import MNIST, DataLoader
 from bindsnet.encoding import PoissonEncoder, BernoulliEncoder, RankOrderEncoder
-from bindsnet.learning import PostPre, WeightDependentPostPre, Hebbian
 from bindsnet.evaluation import all_activity, proportion_weighting, assign_labels
 from bindsnet.network.monitors import Monitor
 
@@ -18,7 +17,7 @@ import os
 import argparse
 
 # import local modules
-from models.diehl_cook_snn import DiehlAndCookNetwork
+from models.diehl_cook_snn import DiehlAndCookNetwork,DiehlAndCookNetworkInt
 
 
 
@@ -85,7 +84,7 @@ if args.encoding == "RankOrder":
 
 
 # build network based on the input argument
-network = DiehlAndCookNetwork(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+network = DiehlAndCookNetworkInt(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
 
 # run the network using the GPU/CUDA
 if gpu:
