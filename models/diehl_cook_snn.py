@@ -171,7 +171,7 @@ class DiehlAndCookNetworkInt(Network):
         self.dt = dt
         self.batch_size = batch_size
 
-        SCALE_FACTOR = 1e17
+        SCALE_FACTOR = 2**16
         # SCALE_FACTOR = 1
         # NORM_SCALE = 1e32
 
