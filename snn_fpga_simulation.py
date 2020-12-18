@@ -10,6 +10,7 @@ from bindsnet.datasets import MNIST, DataLoader
 from bindsnet.encoding import PoissonEncoder, BernoulliEncoder, RankOrderEncoder
 from bindsnet.evaluation import all_activity, proportion_weighting, assign_labels
 from bindsnet.network.monitors import Monitor
+from bindsnet.network import load
 
 # miscellaneous imports
 import os
@@ -83,26 +84,33 @@ if args.encoding == "RankOrder":
 
 
 # build network based on the input argument
-network = DiehlAndCookNetworkInt(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+networkFile = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_snn.pt"
+weightFileDirectory = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_weights"
+network = load("./fpga_snn_models/networks/diehlAndCook_Poisson_64_snn.pt")
+
+# update weights based on the FPGA values
+# extract connections
+excitatoryConnectionWeights = network.connections["X","Y"].w
+
+# test the adjusted weights
+
+# for each hidden layer neuron
+for neuronIdx in range(excitatoryConnectionWeights.shape[1]):
+    # new file
+    neuronFile = open(f"{weightFileDirectory}/{neuronIdx}.txt","r")
+
+    # for each input neuron
+    for inputIdx in range(excitatoryConnectionWeights.shape[0]):
+        # read the weight value from the file
+        hexWeightValue = neuronFile.readline()
+        weightValue = int(hexWeightValue,16)
+        excitatoryConnectionWeights[inputIdx][neuronIdx] = weightValue
+
+    neuronFile.close()
 
 # run the network using the GPU/CUDA
 if gpu:
     network.to("cuda")
-
-# load the MNIST training dataset
-# use the encoder to convert the input into spikes
-dataset = MNIST(
-    encoder,
-    None,
-    root=os.path.join(".", "data", "MNIST"),
-    download=True,
-    transform=transforms.Compose(
-        [transforms.ToTensor(), transforms.Lambda(lambda x: x * intensity)]
-    ),
-)
-
-# create a dataloader to iterate over and batch the training data
-train_dataloader = DataLoader( dataset, batch_size=batch_size, shuffle=True, num_workers=n_workers, pin_memory=True, )
 
 
 # load the MNIST test dataset
@@ -144,72 +152,6 @@ network.add_monitor(output_spikes_monitor, name="Y")
 
 # create a tensor to store the spiking activity for all neurons for the duration of the update_interval 
 spike_record = torch.zeros((update_interval, int(time / dt), n_neurons), device=device)
-
-# train the network
-print("\nBegin training.\n")
-
-# create a list to store the sample labels for each batch in the update interval
-labels = []
-
-# iterate through each batch of data
-for step, batch in enumerate(train_dataloader):
-
-    # get next input sample
-    inputs = {"X": batch["encoded_image"]}
-    if gpu:
-        inputs = {k: v.cuda() for k, v in inputs.items()}
-
-    # if it is time to print out an accuracy estimate
-    if step % update_steps == 0 and step > 0:
-
-        # convert the array of labels into a tensor
-        label_tensor = torch.tensor(labels, device=device)
-
-        # get network predictions based on the spiking activity, previous assignments and number of classes
-        all_activity_pred = all_activity( spikes=spike_record, assignments=assignments, n_labels=n_classes )
-
-        # get network predictions based on the spiking activity, previous assignments, proportional assignments and number of classes
-        proportion_pred = proportion_weighting( spikes=spike_record, assignments=assignments, proportions=proportions, n_labels=n_classes, )
-
-        # compute the network accuracy based on the prediction results and append to the assignment accuracy dictionary
-        accuracy["all"].append( 100 * torch.sum(label_tensor.long() == all_activity_pred).item() / len(label_tensor) )
-        
-        # compute the network accuracy based on the proportional prediction results and append to the assignment accuracy dictionary
-        accuracy["proportion"].append( 100 * torch.sum(label_tensor.long() == proportion_pred).item() / len(label_tensor) )
-
-        # report the network accuracy at the current time
-        print( "\nAll activity accuracy: %.2f (last), %.2f (average), %.2f (best)" % ( accuracy["all"][-1], np.mean(accuracy["all"]), np.max(accuracy["all"]), ) )
-        print("Proportion weighting accuracy: %.2f (last), %.2f (average), %.2f" " (best)" % ( accuracy["proportion"][-1], np.mean(accuracy["proportion"]), np.max(accuracy["proportion"]), ) )
-
-        # display how many samples are remaining
-        print("Progress:",step*batch_size,"/",n_train)
-
-        # update the neuron assignments, proportional assignments and spiking rates
-        assignments, proportions, rates = assign_labels( spikes=spike_record, labels=label_tensor, n_labels=n_classes, rates=rates,)
-
-        # reset the list of labels
-        labels = []
-
-    # append the labels of the current batch to the list of labels
-    labels.extend(batch["label"].tolist())
-
-    # run the network on the input
-    network.run(inputs=inputs, time=time, input_time_dim=1)
-
-    # get the spikes produced by the current batch
-    s = output_spikes_monitor.get("s").permute((1, 0, 2))
-
-    # store the spikes inside of the spike record list at the current batch's index (relative to the number of batches in the update interval)
-    spike_record[(step * batch_size) % update_interval : (step * batch_size % update_interval) + s.size(0)] = s
-
-    # reset the network before running it again
-    network.reset_state_variables()  
-
-print("Training complete.\n")
-
-# save the network
-filename = f"./networks/diehlAndCook_{args.encoding}_{batch_size}_snn.pt"
-network.save(filename)
 
 # create a dictionary to store all assignment and proportional assignment accuracy values for the test data
 accuracy = {"all": 0, "proportion": 0}
