@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser()
 
 # --encoding specifies the type of encoding (Poisson, Bernoulli or RankOrder)
 parser.add_argument("--encoding", type=str, default="Poisson")
-parser.add_argument("--bits", type=int, default=16)
+parser.add_argument("--weight_size", type=int, default=16)
 
 # parse the arguments
 args = parser.parse_args()
@@ -85,11 +85,11 @@ if args.encoding == "RankOrder":
 
 
 # build network based on the input argument
-networkFile = "./networks/diehlAndCook_Poisson_64_snn.pt"
-weightFileDirectory = "./networks/diehlAndCook_Poisson_64_weights"
-network = load("./networks/diehlAndCook_Poisson_64_snn.pt")
-assignments = torch.load('./networks/diehlAndCook_Poisson_64_snn_assignments.pt')
-proportions = torch.load('./networks/diehlAndCook_Poisson_64_snn_proportions.pt')
+networkFile = f"./networks/diehlAndCook_Poisson_64_{args.weight_size}_snn.pt"
+weightFileDirectory = f"./networks/diehlAndCook_Poisson_64_{args.weight_size}_weights"
+network = load(f"./networks/diehlAndCook_Poisson_64_{args.weight_size}_snn.pt")
+assignments = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}_snn_assignments.pt')
+proportions = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}_snn_proportions.pt')
 proportions = proportions.view(1,n_neurons)
 
 if gpu:

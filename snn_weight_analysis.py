@@ -1,9 +1,9 @@
 from bindsnet.network import load
 
-networkFile = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_snn.pt"
-weightFileDirectory = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_weights"
+networkFile = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_snn.pt"
+weightFileDirectory = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_weights"
 
-network = load("./fpga_snn_models/networks/diehlAndCook_Poisson_64_snn.pt")
+network = load("./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_snn.pt")
 
 # extract connections
 excitatoryConnectionWeights = network.connections["X","Y"].w
@@ -18,6 +18,7 @@ excitatoryConnectionWeights = network.connections["X","Y"].w
 for neuronIdx in range(excitatoryConnectionWeights.shape[1]):
     # new file
     neuronFile = open(f"{weightFileDirectory}/{neuronIdx}.txt","w")
+    #neuronFileNum = open(f"{weightFileDirectory}/{neuronIdx}_numerical.txt","w")
 
     # for each input neuron
     for inputIdx in range(excitatoryConnectionWeights.shape[0]):
@@ -25,5 +26,7 @@ for neuronIdx in range(excitatoryConnectionWeights.shape[1]):
         weightValue = int(excitatoryConnectionWeights[inputIdx][neuronIdx].numpy())
         hexWeightValue = hex(weightValue)[2:].zfill(4).upper()
         neuronFile.write(f"{hexWeightValue}\n")
+        #neuronFileNum.write(f"{excitatoryConnectionWeights[inputIdx][neuronIdx].numpy()}\n")
 
     neuronFile.close()
+    #neuronFileNum.close()
