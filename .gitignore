@@ -6,5 +6,5 @@ models/__pycache__/*.pyc
 models/__pycache__/
 networks/diehlAndCook_Poisson_64_weights.zip
 models/__pycache__/diehl_cook_snn.cpython-38.pyc
-models/__pycache__/diehl_cook_snn.cpython-38.pyc
 *.pyc
+
