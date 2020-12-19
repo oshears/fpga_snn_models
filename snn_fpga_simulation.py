@@ -16,9 +16,6 @@ from bindsnet.network import load
 import os
 import argparse
 
-# import local modules
-from models.diehl_cook_snn import DiehlAndCookNetwork,DiehlAndCookNetworkInt
-
 
 
 # create an argument parser to interpret command line arguments

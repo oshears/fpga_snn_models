@@ -1,4 +1,16 @@
 from bindsnet.network import load
+import argparse
+
+# create an argument parser to interpret command line arguments
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--weight_size", type=int, default=16)
+
+# parse the arguments
+args = parser.parse_args()
+
+# hexSize = args.weight_size / 4
+hexSize = int(32 / 4)
 
 networkFile = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_snn.pt"
 weightFileDirectory = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_weights"
@@ -24,7 +36,7 @@ for neuronIdx in range(excitatoryConnectionWeights.shape[1]):
     for inputIdx in range(excitatoryConnectionWeights.shape[0]):
         # write the weight value to the file
         weightValue = int(excitatoryConnectionWeights[inputIdx][neuronIdx].numpy())
-        hexWeightValue = hex(weightValue)[2:].zfill(4).upper()
+        hexWeightValue = hex(weightValue)[2:].zfill(hexSize).upper()
         neuronFile.write(f"{hexWeightValue}\n")
         #neuronFileNum.write(f"{excitatoryConnectionWeights[inputIdx][neuronIdx].numpy()}\n")
 
