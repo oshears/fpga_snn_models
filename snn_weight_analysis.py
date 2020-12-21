@@ -12,10 +12,10 @@ args = parser.parse_args()
 # hexSize = args.weight_size / 4
 hexSize = int(32 / 4)
 
-networkFile = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_snn.pt"
-weightFileDirectory = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_weights"
+networkFile = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32bit_snn.pt"
+weightFileDirectory = "./fpga_snn_models/networks/diehlAndCook_Poisson_64_32bit_weights"
 
-network = load("./fpga_snn_models/networks/diehlAndCook_Poisson_64_32_snn.pt")
+network = load("./fpga_snn_models/networks/diehlAndCook_Poisson_64_32bit_snn.pt")
 
 # extract connections
 excitatoryConnectionWeights = network.connections["X","Y"].w
