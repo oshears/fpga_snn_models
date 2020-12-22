@@ -84,9 +84,20 @@ if args.encoding == "RankOrder":
 # build network based on the input argument
 networkFile = f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn.pt"
 weightFileDirectory = f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_weights"
-network = load(f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn.pt")
-assignments = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_assignments.pt')
-proportions = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_proportions.pt')
+
+network = None
+assignments = None
+proportions = None
+
+if gpu:
+    network = load(f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn.pt")
+    assignments = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_assignments.pt')
+    proportions = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_proportions.pt')
+else:
+    network = load(f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn.pt",map_location=torch.device('cpu'))
+    assignments = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_assignments.pt',map_location=torch.device('cpu'))
+    proportions = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_proportions.pt',map_location=torch.device('cpu'))
+    
 proportions = proportions.view(1,n_neurons)
 
 if gpu:
