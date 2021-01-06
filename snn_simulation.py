@@ -227,12 +227,12 @@ for step, batch in enumerate(train_dataloader):
 print("Training complete.\n")
 
 # save the network
-filename = f"./networks/{neuron_type}{args.encoding}_{batch_size}_{args.weight_size}bit_snn.pt"
+filename = f"./networks/{neuron_type}_{args.encoding}_{batch_size}_{args.weight_size}bit_snn.pt"
 network.save(filename)
 
 # write out network assignments and proportions
-torch.save(assignments,f'./networks/{neuron_type}{args.encoding}_{batch_size}_{args.weight_size}bit_snn_assignments.pt')
-torch.save(assignments,f'./networks/{neuron_type}{args.encoding}_{batch_size}_{args.weight_size}bit_snn_proportions.pt')
+torch.save(assignments,f'./networks/{neuron_type}_{args.encoding}_{batch_size}_{args.weight_size}bit_snn_assignments.pt')
+torch.save(assignments,f'./networks/{neuron_type}_{args.encoding}_{batch_size}_{args.weight_size}bit_snn_proportions.pt')
 
 # create a dictionary to store all assignment and proportional assignment accuracy values for the test data
 accuracy = {"all": 0, "proportion": 0}
