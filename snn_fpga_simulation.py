@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser()
 # --encoding specifies the type of encoding (Poisson, Bernoulli or RankOrder)
 parser.add_argument("--encoding", type=str, default="Poisson")
 parser.add_argument("--weight_size", type=int, default=16)
+parser.add_argument("--neuron_type", type=str, default="IF")
 
 # parse the arguments
 args = parser.parse_args()
@@ -55,7 +56,7 @@ dt = 1
 intensity = 128
 
 # gpu setting
-gpu = True
+gpu = torch.cuda.is_available()
 
 # update_interavl specifies the number of samples processed before updating accuracy estimations
 update_interval = update_steps * batch_size
@@ -80,23 +81,28 @@ if args.encoding == "Bernoulli":
 if args.encoding == "RankOrder":
     encoder = RankOrderEncoder(time=time,dt=dt)
 
+neuron_type = ""
+if args.neuron_type == "IF":
+    neuron_type = "if"
+else:
+    neuron_type = "diehlAndCook"
 
 # build network based on the input argument
-networkFile = f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn.pt"
-weightFileDirectory = f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_weights"
+networkFile = f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn.pt"
+weightFileDirectory = f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_weights"
 
 network = None
 assignments = None
 proportions = None
 
 if gpu:
-    network = load(f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn.pt")
-    assignments = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_assignments.pt')
-    proportions = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_proportions.pt')
+    network = load(f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn.pt")
+    assignments = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_assignments.pt')
+    proportions = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_proportions.pt')
 else:
-    network = load(f"./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn.pt",map_location=torch.device('cpu'))
-    assignments = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_assignments.pt',map_location=torch.device('cpu'))
-    proportions = torch.load(f'./networks/diehlAndCook_Poisson_64_{args.weight_size}bit_snn_proportions.pt',map_location=torch.device('cpu'))
+    network = load(f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn.pt",map_location=torch.device('cpu'))
+    assignments = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_assignments.pt',map_location=torch.device('cpu'))
+    proportions = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_proportions.pt',map_location=torch.device('cpu'))
     
 proportions = proportions.view(1,n_neurons)
 

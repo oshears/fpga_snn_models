@@ -17,6 +17,7 @@ import argparse
 
 # import local modules
 from models.diehl_cook_snn import DiehlAndCookNetwork16,DiehlAndCookNetwork32
+from models.if_snn import IFNetwork16,IFNetwork32
 
 
 
@@ -25,7 +26,8 @@ parser = argparse.ArgumentParser()
 
 # --encoding specifies the type of encoding (Poisson, Bernoulli or RankOrder)
 parser.add_argument("--encoding", type=str, default="Poisson")
-parser.add_argument("--weight_size", type=int, default=16)
+parser.add_argument("--weight_size", type=int, default=32)
+parser.add_argument("--neuron_type", type=str, default="IF")
 
 # parse the arguments
 args = parser.parse_args()
@@ -57,7 +59,8 @@ dt = 1
 intensity = 128
 
 # gpu setting
-gpu = True
+# gpu = True
+gpu = torch.cuda.is_available()
 
 # update_interavl specifies the number of samples processed before updating accuracy estimations
 update_interval = update_steps * batch_size
@@ -84,10 +87,19 @@ if args.encoding == "RankOrder":
 
 
 # build network based on the input argument
-if args.weight_size == 16:
-    network = DiehlAndCookNetwork16(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
-elif args.weight_size == 32:
-    network = DiehlAndCookNetwork32(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+neuron_type = ""
+if args.neuron_type == "IF":
+    neuron_type = "if"
+    if args.weight_size == 16:
+        network = IFNetwork16(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+    elif args.weight_size == 32:
+        network = IFNetwork32(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+else:
+    neuron_type = "diehlAndCook"
+    if args.weight_size == 16:
+        network = DiehlAndCookNetwork16(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
+    elif args.weight_size == 32:
+        network = DiehlAndCookNetwork32(n_inpt=784,inpt_shape=(1, 28, 28),batch_size=batch_size,n_neurons=100)
 
 # run the network using the GPU/CUDA
 if gpu:
@@ -212,12 +224,12 @@ for step, batch in enumerate(train_dataloader):
 print("Training complete.\n")
 
 # save the network
-filename = f"./networks/diehlAndCook_{args.encoding}_{batch_size}_{args.weight_size}bit_snn.pt"
+filename = f"./networks/{neuron_type}{args.encoding}_{batch_size}_{args.weight_size}bit_snn.pt"
 network.save(filename)
 
 # write out network assignments and proportions
-torch.save(assignments,f'./networks/diehlAndCook_{args.encoding}_{batch_size}_{args.weight_size}bit_snn_assignments.pt')
-torch.save(assignments,f'./networks/diehlAndCook_{args.encoding}_{batch_size}_{args.weight_size}bit_snn_proportions.pt')
+torch.save(assignments,f'./networks/{neuron_type}{args.encoding}_{batch_size}_{args.weight_size}bit_snn_assignments.pt')
+torch.save(assignments,f'./networks/{neuron_type}{args.encoding}_{batch_size}_{args.weight_size}bit_snn_proportions.pt')
 
 # create a dictionary to store all assignment and proportional assignment accuracy values for the test data
 accuracy = {"all": 0, "proportion": 0}
