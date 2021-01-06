@@ -39,6 +39,7 @@ n_neurons = 100
 
 # batch_size specifies the number of training samples to collect weight changes from before updating the weights
 batch_size = 64
+print(f"Batch Size: {batch_size}")
 
 # n_train specifies the number of training samples
 n_train = 60000
@@ -61,6 +62,7 @@ intensity = 128
 # gpu setting
 # gpu = True
 gpu = torch.cuda.is_available()
+print(f"GPU: {gpu}")
 
 # update_interavl specifies the number of samples processed before updating accuracy estimations
 update_interval = update_steps * batch_size
@@ -87,6 +89,7 @@ if args.encoding == "RankOrder":
 
 
 # build network based on the input argument
+print(f"Neuron Model: {args.neuron_type}")
 neuron_type = ""
 if args.neuron_type == "IF":
     neuron_type = "if"
