@@ -60,7 +60,6 @@ dt = 1
 intensity = 128
 
 # gpu setting
-# gpu = True
 gpu = torch.cuda.is_available()
 print(f"GPU: {gpu}")
 
@@ -90,6 +89,7 @@ if args.encoding == "RankOrder":
 
 # build network based on the input argument
 print(f"Neuron Model: {args.neuron_type}")
+print(f"Weight Size: {args.weight_size}")
 neuron_type = ""
 if args.neuron_type == "IF":
     neuron_type = "if"
