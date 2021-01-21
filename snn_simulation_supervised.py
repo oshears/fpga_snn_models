@@ -240,7 +240,7 @@ network.save(filename)
 
 # write out network assignments and proportions
 torch.save(assignments,f'./networks/{neuron_type}_{args.encoding}_{batch_size}_{args.weight_size}bit_snn_assignments.pt')
-torch.save(assignments,f'./networks/{neuron_type}_{args.encoding}_{batch_size}_{args.weight_size}bit_snn_proportions.pt')
+torch.save(proportions,f'./networks/{neuron_type}_{args.encoding}_{batch_size}_{args.weight_size}bit_snn_proportions.pt')
 
 # create a dictionary to store all assignment and proportional assignment accuracy values for the test data
 accuracy = {"all": 0, "proportion": 0}
@@ -254,8 +254,10 @@ network.train(mode=False)
 # iterate over each batch
 for step, batch in enumerate(test_dataloader):
 
-    # get next input sample and send to the GPU
-    inputs = {"X": batch["encoded_image"].cuda()}
+    # get next input sample
+    inputs = {"X": batch["encoded_image"]}
+    if gpu:
+        inputs = {k: v.cuda() for k, v in inputs.items()}
 
     # run the network on the input
     network.run(inputs=inputs, time=time, input_time_dim=1)

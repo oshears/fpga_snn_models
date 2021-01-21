@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--encoding", type=str, default="Poisson")
 parser.add_argument("--weight_size", type=int, default=16)
 parser.add_argument("--neuron_type", type=str, default="IF")
+parser.add_argument("--batch_size", type=int, default="IF")
 
 # parse the arguments
 args = parser.parse_args()
@@ -35,7 +36,7 @@ args = parser.parse_args()
 n_neurons = 100
 
 # batch_size specifies the number of training samples to collect weight changes from before updating the weights
-batch_size = 64
+batch_size = args.batch_size
 
 # n_train specifies the number of training samples
 n_train = 60000
@@ -88,21 +89,21 @@ else:
     neuron_type = "diehlAndCook"
 
 # build network based on the input argument
-networkFile = f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn.pt"
-weightFileDirectory = f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_weights"
+networkFile = f"./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_snn.pt"
+weightFileDirectory = f"./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_weights"
 
 network = None
 assignments = None
 proportions = None
 
 if gpu:
-    network = load(f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn.pt")
-    assignments = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_assignments.pt')
-    proportions = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_proportions.pt')
+    network = load(f"./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_snn.pt")
+    assignments = torch.load(f'./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_snn_assignments.pt')
+    proportions = torch.load(f'./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_snn_proportions.pt')
 else:
-    network = load(f"./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn.pt",map_location=torch.device('cpu'))
-    assignments = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_assignments.pt',map_location=torch.device('cpu'))
-    proportions = torch.load(f'./networks/{neuron_type}_Poisson_64_{args.weight_size}bit_snn_proportions.pt',map_location=torch.device('cpu'))
+    network = load(f"./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_snn.pt",map_location=torch.device('cpu'))
+    assignments = torch.load(f'./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_snn_assignments.pt',map_location=torch.device('cpu'))
+    proportions = torch.load(f'./networks/{neuron_type}_Poisson_{batch_size}_{args.weight_size}bit_snn_proportions.pt',map_location=torch.device('cpu'))
     
 proportions = proportions.view(1,n_neurons)
 
@@ -154,18 +155,6 @@ test_dataloader = DataLoader( test_dataset, batch_size=256, shuffle=False, num_w
 # declare variables needed for estimating the network accuracy
 n_classes = 10
 
-# assignments stores the label that each output neuron corresponds to
-# assignments = -torch.ones(n_neurons, device=device)
-
-# proportions stores the ratio of the number of times each of the output neurons produced a spike for the corresponding class relative to other classes
-# proportions = torch.zeros((n_neurons, n_classes), device=device)
-
-# rates stores the number of times each of the output neurons produced a spike for the corresponding class
-# rates = torch.zeros((n_neurons, n_classes), device=device)
-
-# create a dictionary to store all assignment and proportional assignment accuracy values
-# accuracy = {"all": [], "proportion": []}
-
 # create a monitor to record the spiking activity of the output layer (Y)
 output_spikes_monitor = Monitor(network.layers["Y"], state_vars=["s"], time=int(time / dt))
 
@@ -213,11 +202,14 @@ for step, batch in enumerate(test_dataloader):
     # compute the network accuracy based on the proportional prediction results and add the results to the accuracy dictionary
     accuracy["proportion"] += float( torch.sum(label_tensor.long() == proportion_pred).item() )
 
+    print(f"all activity: {all_activity_pred}")
+    print(f"proportion activity: {proportion_pred}")
+
     # if it is time to print out an accuracy estimate
     if step % update_steps == 0 and step > 0:
         # print out the assignment and proportional assignment accuracy
-        print("\nAll activity accuracy: %.2f" % (accuracy["all"] / n_test))
-        print("Proportion weighting accuracy: %.2f" % (accuracy["proportion"] / n_test))
+        print("\nAll activity accuracy: %.2f" % (accuracy["all"] / (step*256)))
+        print("Proportion weighting accuracy: %.2f" % (accuracy["proportion"] / (step*256)))
 
         #print out how many test samples are remaining
         print("Progress:",step*256,"/",n_test)
