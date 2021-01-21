@@ -29,6 +29,7 @@ parser.add_argument("--encoding", type=str, default="Poisson")
 parser.add_argument("--weight_size", type=int, default=32)
 parser.add_argument("--neuron_type", type=str, default="IF")
 parser.add_argument("--batch_size", type=int, default=64)
+parser.add_argument("--update_steps", type=int, default=10)
 
 # parse the arguments
 args = parser.parse_args()
@@ -49,7 +50,7 @@ n_train = 60000
 n_test = 10000
 
 # update_steps specifies the number of batches to process before reporting an update
-update_steps = 10
+update_steps = args.update_steps
 
 # time specifies the simulation time of the SNN
 time = 100
@@ -180,7 +181,6 @@ for step, batch in enumerate(train_dataloader):
         inputs = {k: v.cuda() for k, v in inputs.items()}
 
     label = batch["label"]
-    print(label)
 
     # if it is time to print out an accuracy estimate
     if step % update_steps == 0 and step > 0:
@@ -219,7 +219,6 @@ for step, batch in enumerate(train_dataloader):
     # add supervised element to the network
     choice = np.random.choice(int(n_neurons / n_classes), size=1, replace=False)
     clamp = {"Y": int(n_neurons / n_classes) * label.long() + torch.Tensor(choice).long()}
-    print(clamp)
 
     # run the network on the input
     network.run(inputs=inputs, time=time, input_time_dim=1,clamp=clamp)
