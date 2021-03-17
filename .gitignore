@@ -2,3 +2,4 @@ models/__pycache__/__init__.cpython-38.pyc
 data/
 *.pyc
 *.zip
+.vscode
