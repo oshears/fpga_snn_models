@@ -90,19 +90,21 @@ output_spikes = output_spikes_monitor.get("s").reshape((TIMESTEPS,NUM_NEURONS))
 assignments = torch.load('../networks/if_Poisson_1_32bit_snn_assignments.pt',map_location=torch.device('cpu'))
 
 
+
+
+# potentials = output_spikes_monitor.get("v").reshape((TIMESTEPS,NUM_NEURONS))
+# # print(f"Weights: {w[:,0]}")
+# for time_idx in range(TIMESTEPS):  # range(TIMESTEPS):
+#     # for spike_idx in range(NUM_INPUTS):
+#     #     print(f"Time: {time_idx} Spike: {spike_idx} Value: {spike_inputs[time_idx,spike_idx]}")
+#     print(f"Time: {time_idx} Neuron: 0 Spikes: {output_spikes[time_idx,0]}")
+#     print(f"Time: {time_idx} Neuron: 0 Potential: {potentials[time_idx,0]}")
+
+# count = output_spikes[:,0].sum()
+# print(f"Neuron[0] : {count}")
 for neuron_idx in range(NUM_NEURONS):
     count = output_spikes[:,neuron_idx].sum()
     print(f"Neuron[{neuron_idx}] : {count}")
-
-potentials = output_spikes_monitor.get("v").reshape((TIMESTEPS,NUM_NEURONS))
-# print(f"Weights: {w[:,0]}")
-for time_idx in range(TIMESTEPS):  # range(TIMESTEPS):
-    # for spike_idx in range(NUM_INPUTS):
-    #     print(f"Time: {time_idx} Spike: {spike_idx} Value: {spike_inputs[time_idx,spike_idx]}")
-    print(f"Time: {time_idx} Neuron: 0 Spikes: {output_spikes[time_idx,0]}")
-    print(f"Time: {time_idx} Neuron: 0 Potential: {potentials[time_idx,0]}")
-
-
 
 plot_voltages({"IF Layer" : output_spikes_monitor.get("v")})
 plot_spikes({"IF Layer" : output_spikes_monitor.get("s")})
